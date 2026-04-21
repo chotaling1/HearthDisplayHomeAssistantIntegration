@@ -1,46 +1,56 @@
-# Notice
+# Hearth Display for Home Assistant
 
-The component and platforms in this repository are not meant to be used by a
-user, but as a "blueprint" that custom component developers can build
-upon, to make more awesome stuff.
+A custom [Home Assistant](https://www.home-assistant.io/) integration for [Hearth Display](https://hearthdisplay.com/) that brings your family's routine data into Home Assistant.
 
-HAVE FUN! 😎
+## Features
 
-## Why?
+- **Routine tracking sensors** — creates a sensor for each family member's routine, showing completed steps, total steps, and progress percentage.
+- **Per-member devices** — each family member appears as a separate device in Home Assistant, with their routines grouped underneath.
+- **Automatic polling** — data is refreshed from the Hearth Display cloud API every hour.
 
-This is simple, by having custom_components look (README + structure) the same
-it is easier for developers to help each other and for users to start using them.
+## Requirements
 
-If you are a developer and you want to add things to this "blueprint" that you think more
-developers will have use for, please open a PR to add it :)
+- Home Assistant **2026.3.2** or newer
+- A [Hearth Display](https://hearthdisplay.com/) account (email & password)
 
-## What?
+## Installation
 
-This repository contains multiple files, here is a overview:
+### HACS (recommended)
 
-File | Purpose | Documentation
--- | -- | --
-`.devcontainer.json` | Used for development/testing with Visual Studio Code. | [Documentation](https://code.visualstudio.com/docs/remote/containers)
-`.github/ISSUE_TEMPLATE/*.yml` | Templates for the issue tracker | [Documentation](https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository)
-`custom_components/hearth_display/*` | Integration files, this is where everything happens. | [Documentation](https://developers.home-assistant.io/docs/creating_component_index)
-`CONTRIBUTING.md` | Guidelines on how to contribute. | [Documentation](https://help.github.com/en/github/building-a-strong-community/setting-guidelines-for-repository-contributors)
-`LICENSE` | The license file for the project. | [Documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/licensing-a-repository)
-`README.md` | The file you are reading now, should contain info about the integration, installation and configuration instructions. | [Documentation](https://help.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax)
-`requirements.txt` | Python packages used for development/lint/testing this integration. | [Documentation](https://pip.pypa.io/en/stable/user_guide/#requirements-files)
+1. Open HACS in Home Assistant.
+2. Go to **Integrations** and click the three-dot menu → **Custom repositories**.
+3. Add `https://github.com/chotaling1/HearthDisplayHomeAssistantIntegration` with category **Integration**.
+4. Search for "Hearth Display" and install it.
+5. Restart Home Assistant.
 
-## How?
+### Manual
 
-1. Create a new repository in GitHub, using this repository as a template by clicking the "Use this template" button in the GitHub UI.
-1. Open your new repository in Visual Studio Code devcontainer (Preferably with the "`Dev Containers: Clone Repository in Named Container Volume...`" option).
-1. Rename all instances of the `hearth_display` to `custom_components/<your_integration_domain>` (e.g. `custom_components/awesome_integration`).
-1. Rename all instances of the `Integration Blueprint` to `<Your Integration Name>` (e.g. `Awesome Integration`).
-1. Run the `scripts/develop` to start HA and test out your new integration.
+1. Copy the `custom_components/hearth_display` folder into your Home Assistant `config/custom_components/` directory.
+2. Restart Home Assistant.
 
-## Next steps
+## Configuration
 
-These are some next steps you may want to look into:
-- Add tests to your integration, [`pytest-homeassistant-custom-component`](https://github.com/MatthewFlamm/pytest-homeassistant-custom-component) can help you get started.
-- Add brand images (logo/icon).
-- Create your first release.
-- Share your integration on the [Home Assistant Forum](https://community.home-assistant.io/).
-- Submit your integration to [HACS](https://hacs.xyz/docs/publish/start).
+1. Go to **Settings → Devices & Services → Add Integration**.
+2. Search for **Hearth Display**.
+3. Enter your Hearth Display account email and password.
+
+The integration will create a device for each family member and a sensor for each of their routines.
+
+## Sensors
+
+Each routine sensor exposes:
+
+| Attribute | Description |
+| --- | --- |
+| `state` | Number of completed steps |
+| `total_steps` | Total number of steps in the routine |
+| `completed_steps` | Number of completed steps |
+| `progress` | Completion percentage (0–100%) |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+
+## License
+
+See [LICENSE](LICENSE) for details.
