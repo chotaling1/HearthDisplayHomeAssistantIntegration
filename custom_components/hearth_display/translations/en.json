@@ -1,0 +1,21 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "Enter your Hearth Display account credentials. If you need help: {documentation_url}",
+                "data": {
+                    "email": "Email",
+                    "password": "Password"
+                }
+            }
+        },
+        "error": {
+            "auth": "Invalid email or password.",
+            "connection": "Unable to connect to the Hearth Display server.",
+            "unknown": "Unknown error occurred."
+        },
+        "abort": {
+            "already_configured": "This Hearth Display account is already configured."
+        }
+    }
+}
