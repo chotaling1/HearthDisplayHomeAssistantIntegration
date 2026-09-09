@@ -114,6 +114,36 @@ class HearthDisplayApiClient:
             params=params,
         )
 
+    async def async_get_tasks(self) -> Any:
+        """Get tasks data from the API."""
+        if not self._cookies:
+            await self.async_login()
+
+        return await self._api_wrapper(
+            method="get",
+            url=f"{BASE_URL}/api/web/task",
+        )
+
+    async def async_complete_task(self, task_id: int) -> Any:
+        """Mark a task as complete."""
+        if not self._cookies:
+            await self.async_login()
+
+        return await self._api_wrapper(
+            method="post",
+            url=f"{BASE_URL}/api/web/task/complete/{task_id}",
+        )
+
+    async def async_undo_task(self, task_id: int) -> Any:
+        """Undo completion of a task."""
+        if not self._cookies:
+            await self.async_login()
+
+        return await self._api_wrapper(
+            method="post",
+            url=f"{BASE_URL}/api/web/task/undo/{task_id}",
+        )
+
     async def _api_wrapper(
         self,
         method: str,
