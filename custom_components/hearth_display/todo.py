@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.todo import (
@@ -100,6 +101,15 @@ class HearthDisplayTodoList(CoordinatorEntity, TodoListEntity):
         under repeats of the same chore. This shows everything outstanding
         (including overdue) plus whatever was completed today, which keeps a
         mis-tap undoable without the backlog.
+
+        Outstanding items are listed first, oldest due date first. Recurring
+        chores reuse the same subject every day, and ``todo.update_item``
+        resolves a name to the *first* matching item, so ordering decides
+        which occurrence an automation acts on. A recurring task's uid changes
+        with each occurrence and cannot be hard-coded in an automation, which
+        makes name targeting the only practical option -- putting outstanding
+        work first means a name resolves to the occurrence still needing
+        action rather than one already completed today.
         """
         items: list[TodoItem] = []
         for task in self._tasks:
@@ -119,7 +129,14 @@ class HearthDisplayTodoList(CoordinatorEntity, TodoListEntity):
                     description=(task.get("description") or "").strip() or None,
                 )
             )
-        return items
+
+        return sorted(
+            items,
+            key=lambda item: (
+                item.status == TodoItemStatus.COMPLETED,
+                item.due or date.max,
+            ),
+        )
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """
