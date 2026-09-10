@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from .coordinator import BlueprintDataUpdateCoordinator
+    from .coordinator import HearthDisplayDataUpdateCoordinator
     from .data import HearthDisplayConfigEntry
 
 
@@ -77,7 +77,7 @@ class HearthDisplayRoutineSensor(CoordinatorEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: BlueprintDataUpdateCoordinator,
+        coordinator: HearthDisplayDataUpdateCoordinator,
         entry_id: str,
         user_id: int,
         first_name: str,
@@ -158,7 +158,7 @@ class HearthDisplayTaskSensor(CoordinatorEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: BlueprintDataUpdateCoordinator,
+        coordinator: HearthDisplayDataUpdateCoordinator,
         entry_id: str,
         group_key: str,
         user_id: int | None,

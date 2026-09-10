@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from .coordinator import BlueprintDataUpdateCoordinator
+    from .coordinator import HearthDisplayDataUpdateCoordinator
     from .data import HearthDisplayConfigEntry
 
 
@@ -64,7 +64,7 @@ class HearthDisplayTodoList(CoordinatorEntity, TodoListEntity):
 
     def __init__(
         self,
-        coordinator: BlueprintDataUpdateCoordinator,
+        coordinator: HearthDisplayDataUpdateCoordinator,
         entry_id: str,
         group_key: str,
         user_id: int | None,

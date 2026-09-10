@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from homeassistant.loader import Integration
 
     from .api import HearthDisplayApiClient
-    from .coordinator import BlueprintDataUpdateCoordinator
+    from .coordinator import HearthDisplayDataUpdateCoordinator
 
 
 type HearthDisplayConfigEntry = ConfigEntry[HearthDisplayData]
@@ -18,8 +18,8 @@ type HearthDisplayConfigEntry = ConfigEntry[HearthDisplayData]
 
 @dataclass
 class HearthDisplayData:
-    """Data for the Blueprint integration."""
+    """Runtime data for the Hearth Display integration."""
 
     client: HearthDisplayApiClient
-    coordinator: BlueprintDataUpdateCoordinator
+    coordinator: HearthDisplayDataUpdateCoordinator
     integration: Integration
