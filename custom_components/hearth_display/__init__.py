@@ -16,7 +16,7 @@ from homeassistant.loader import async_get_loaded_integration
 
 from .api import HearthDisplayApiClient
 from .const import DOMAIN, LOGGER
-from .coordinator import BlueprintDataUpdateCoordinator
+from .coordinator import HearthDisplayDataUpdateCoordinator
 from .data import HearthDisplayData
 
 if TYPE_CHECKING:
@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
+    Platform.TODO,
 ]
 
 
@@ -35,7 +36,7 @@ async def async_setup_entry(
     entry: HearthDisplayConfigEntry,
 ) -> bool:
     """Set up this integration using UI."""
-    coordinator = BlueprintDataUpdateCoordinator(
+    coordinator = HearthDisplayDataUpdateCoordinator(
         hass=hass,
         logger=LOGGER,
         name=DOMAIN,
