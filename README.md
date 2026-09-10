@@ -90,6 +90,12 @@ actions:
 
 To be explicit about which occurrence you're completing, look the ID up first with `todo.get_items` and pass that instead of the name.
 
+## Support
+
+If this integration is useful to you, you can support its development:
+
+<a href="https://buymeacoffee.com/hotalingchn"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="48" alt="Buy Me A Coffee"></a>
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
