@@ -8,5 +8,5 @@
   "documentation": "https://github.com/chotaling1/HearthDisplayHomeAssistantIntegration",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/chotaling1/HearthDisplayHomeAssistantIntegration/issues",
-  "version": "0.1.0"
+  "version": "0.2.2"
 }
