@@ -62,10 +62,7 @@ class HearthDisplayApiClient:
                     url=LOGIN_URL,
                     json={"email": self._email, "password": self._password},
                 )
-                if response.status in (401, 403):
-                    msg = "Invalid credentials"
-                    raise HearthDisplayApiClientAuthenticationError(msg)
-                response.raise_for_status()
+                _verify_response_or_raise(response)
 
                 # Store cookies from Set-Cookie headers
                 self._cookies = {k: v.value for k, v in response.cookies.items()}

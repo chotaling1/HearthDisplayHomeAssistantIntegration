@@ -35,17 +35,15 @@ async def async_setup_entry(
 
     entities: list[SensorEntity] = []
     for member in (coordinator.data or {}).get("routines") or []:
-        for routine in member.get("routines", []):
-            entities.append(
-                HearthDisplayRoutineSensor(
-                    coordinator=coordinator,
-                    entry_id=entry.entry_id,
-                    user_id=member["user_id"],
-                    first_name=member["first_name"].strip(),
-                    routine_id=routine["id"],
-                    routine_name=routine["name"],
-                )
+        entities.extend(
+            HearthDisplayRoutineSensor(
+                coordinator=coordinator,
+                entry_id=entry.entry_id,
+                member=member,
+                routine=routine,
             )
+            for routine in member.get("routines", [])
+        )
 
     # Task summaries are keyed by assignee rather than by task, so the entity
     # set stays stable even though recurring chores mint a new task id daily.
@@ -79,20 +77,18 @@ class HearthDisplayRoutineSensor(CoordinatorEntity, SensorEntity):
         self,
         coordinator: HearthDisplayDataUpdateCoordinator,
         entry_id: str,
-        user_id: int,
-        first_name: str,
-        routine_id: int,
-        routine_name: str,
+        member: dict[str, Any],
+        routine: dict[str, Any],
     ) -> None:
         """Initialize the routine sensor."""
         super().__init__(coordinator)
-        self._user_id = user_id
-        self._routine_id = routine_id
-        self._attr_unique_id = f"{entry_id}_{user_id}_{routine_id}"
-        self._attr_name = routine_name
+        self._user_id = member["user_id"]
+        self._routine_id = routine["id"]
+        self._attr_unique_id = f"{entry_id}_{self._user_id}_{self._routine_id}"
+        self._attr_name = routine["name"]
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, str(user_id))},
-            name=first_name,
+            identifiers={(DOMAIN, str(self._user_id))},
+            name=member["first_name"].strip(),
             manufacturer="Hearth Display",
         )
 
@@ -123,27 +119,27 @@ class HearthDisplayRoutineSensor(CoordinatorEntity, SensorEntity):
         total = routine.get("total_steps", 0)
         completed = routine.get("completed_steps", 0)
 
-        attrs: dict[str, Any] = {
+        return {
             "total_steps": total,
             "completed_steps": completed,
-            "completion_percentage": round((completed / total) * 100, 1) if total > 0 else 0,
+            "completion_percentage": (
+                round((completed / total) * 100, 1) if total > 0 else 0
+            ),
             "active_today": routine.get("active_today"),
             "is_active": routine.get("is_active"),
             "routine_id": routine.get("id"),
             "recurrence": routine.get("formatted_recurrence_details"),
+            "steps": [
+                {
+                    "name": step.get("name"),
+                    "is_complete": step.get("is_complete", False),
+                    "can_complete_today": step.get("can_complete_step_today", False),
+                }
+                for step in sorted(
+                    routine.get("steps", []), key=lambda s: s.get("order", 0)
+                )
+            ],
         }
-
-        steps = routine.get("steps", [])
-        step_summary = []
-        for step in sorted(steps, key=lambda s: s.get("order", 0)):
-            step_summary.append({
-                "name": step.get("name"),
-                "is_complete": step.get("is_complete", False),
-                "can_complete_today": step.get("can_complete_step_today", False),
-            })
-        attrs["steps"] = step_summary
-
-        return attrs
 
 
 class HearthDisplayTaskSensor(CoordinatorEntity, SensorEntity):
@@ -206,9 +202,7 @@ class HearthDisplayOpenTasksSensor(HearthDisplayTaskSensor):
         return {
             "overdue": sum(1 for task in open_tasks if task.get("is_overdue")),
             "priority": sum(1 for task in open_tasks if task.get("is_priority")),
-            "completed_today": sum(
-                1 for task in self._tasks if completed_today(task)
-            ),
+            "completed_today": sum(1 for task in self._tasks if completed_today(task)),
             "tasks": [
                 {
                     "subject": (task.get("subject") or "").strip(),
