@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.exceptions import ConfigEntryAuthFailed
@@ -27,15 +26,9 @@ class HearthDisplayDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> Any:
         """Update data via library."""
         try:
-            now = datetime.now(UTC)
-            start_time = (now - timedelta(days=1)).isoformat()
-            end_time = (now + timedelta(days=1)).isoformat()
             client = self.config_entry.runtime_data.client
             routines, tasks = await asyncio.gather(
-                client.async_get_routines(
-                    start_time=start_time,
-                    end_time=end_time,
-                ),
+                client.async_get_routines(),
                 client.async_get_tasks(),
             )
         except HearthDisplayApiClientAuthenticationError as exception:

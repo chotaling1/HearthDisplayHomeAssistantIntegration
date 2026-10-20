@@ -129,6 +129,8 @@ class HearthDisplayRoutineSensor(CoordinatorEntity, SensorEntity):
             "is_active": routine.get("is_active"),
             "routine_id": routine.get("id"),
             "recurrence": routine.get("formatted_recurrence_details"),
+            "week_progress": routine.get("week_progress", []),
+            "streak_length": routine.get("streak_length"),
             "steps": [
                 {
                     "name": step.get("name"),
