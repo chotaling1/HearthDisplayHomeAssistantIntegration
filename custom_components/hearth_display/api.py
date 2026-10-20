@@ -66,10 +66,11 @@ def _normalize_routine(
         "total_steps": _first(
             details.get("p_available_steps"), routine.get("p_available_steps"), 0
         ),
-        "active_today": _first(
-            routine.get("p_active_today"), routine.get("active_today")
+        "active_today": routine.get("p_is_scheduled_today"),
+        "is_active": not (routine.get("analytics_properties") or {}).get(
+            "is_paused", False
         ),
-        "is_active": _first(routine.get("p_is_active"), routine.get("is_active")),
+        "streak_length": routine.get("streak_length"),
         "formatted_recurrence_details": _first(
             routine.get("p_formatted_recurrence_details"),
             details.get("p_formatted_recurrence_details"),
