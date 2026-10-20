@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import socket
 from typing import Any
 
@@ -26,6 +27,64 @@ class HearthDisplayApiClientAuthenticationError(
     HearthDisplayApiClientError,
 ):
     """Exception to indicate an authentication error."""
+
+
+def _first(*values: Any) -> Any:
+    """Return the first value that is not None."""
+    return next((value for value in values if value is not None), None)
+
+
+def _normalize_member(
+    member: dict[str, Any],
+    details_by_id: dict[int, dict[str, Any]],
+) -> dict[str, Any]:
+    """Convert a ``/routines/summary`` member into the original routines shape."""
+    profile = member.get("p_profile") or {}
+    return {
+        "user_id": profile.get("user_id"),
+        "first_name": profile.get("first_name") or "",
+        "color": profile.get("color"),
+        "routines": [
+            _normalize_routine(routine, details_by_id.get(routine["id"]) or {})
+            for routine in member.get("routines") or []
+        ],
+    }
+
+
+def _normalize_routine(
+    routine: dict[str, Any],
+    details: dict[str, Any],
+) -> dict[str, Any]:
+    """Merge a summary routine with its details into the original shape."""
+    steps = details.get("steps") or routine.get("steps") or []
+    return {
+        "id": routine["id"],
+        "name": routine.get("name") or details.get("name"),
+        "completed_steps": _first(
+            details.get("p_completed_steps"), routine.get("p_completed_steps"), 0
+        ),
+        "total_steps": _first(
+            details.get("p_available_steps"), routine.get("p_available_steps"), 0
+        ),
+        "active_today": _first(
+            routine.get("p_active_today"), routine.get("active_today")
+        ),
+        "is_active": _first(routine.get("p_is_active"), routine.get("is_active")),
+        "formatted_recurrence_details": _first(
+            routine.get("p_formatted_recurrence_details"),
+            details.get("p_formatted_recurrence_details"),
+        ),
+        "week_progress": routine.get("p_week_progress") or [],
+        "steps": [
+            {
+                "name": step.get("name"),
+                "order": step.get("order", 0),
+                "is_complete": bool(step.get("p_is_complete")),
+                "can_complete_step_today": bool(step.get("p_can_complete")),
+            }
+            for step in steps
+        ],
+    }
 
 
 def _verify_response_or_raise(response: aiohttp.ClientResponse) -> None:
@@ -90,25 +149,45 @@ class HearthDisplayApiClient:
             url=f"{BASE_URL}/api/web/session",
         )
 
-    async def async_get_routines(
-        self,
-        start_time: str | None = None,
-        end_time: str | None = None,
-    ) -> Any:
-        """Get routines data from the API."""
+    async def async_get_routines(self) -> list[dict[str, Any]]:
+        """
+        Get routines for every family member, with today's steps.
+
+        ``GET /api/web/routines`` now only accepts POST (create). The web app
+        reads ``/api/web/routines/summary`` for the per-member routine list and
+        ``/api/web/routines/{id}/details`` for each routine's steps. Both use
+        ``p_``-prefixed fields; they are normalised back to the original shape
+        so entity unique ids and attributes stay the same.
+        """
         if not self._cookies:
             await self.async_login()
 
-        params: dict[str, str] = {}
-        if start_time:
-            params["start_time"] = start_time
-        if end_time:
-            params["end_time"] = end_time
+        summary = await self._api_wrapper(
+            method="get",
+            url=f"{BASE_URL}/api/web/routines/summary",
+        )
+        members = summary or []
+        routine_ids = [
+            routine["id"]
+            for member in members
+            for routine in member.get("routines") or []
+        ]
+        details = await asyncio.gather(
+            *(self.async_get_routine_details(rid) for rid in routine_ids)
+        )
+        details_by_id = dict(zip(routine_ids, details, strict=True))
 
+        return [
+            _normalize_member(member, details_by_id)
+            for member in members
+            if (member.get("p_profile") or {}).get("user_id") is not None
+        ]
+
+    async def async_get_routine_details(self, routine_id: int) -> dict[str, Any]:
+        """Get today's progress and steps for one routine."""
         return await self._api_wrapper(
             method="get",
-            url=f"{BASE_URL}/api/web/routines",
-            params=params,
+            url=f"{BASE_URL}/api/web/routines/{routine_id}/details",
         )
 
     async def async_get_tasks(self) -> Any:
